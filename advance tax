@@ -1,0 +1,569 @@
+"""""
+-------------------------------------------------
+This is the reference for the calculate_tax
+-------------------------------------------------
+def calculate_tax(income, tax_slabs):
+    if income > 1500000:
+        tax = ((income - 1500000) * 0.30) + 15000 + 30000 + 45000 + 60000
+    elif income > 1200000:
+        tax = ((income - 1200000) * 0.20) + 15000 + 30000 + 45000
+    elif income > 900000:
+        tax = ((income - 900000) * 0.15) + 15000 + 30000
+    elif income > 600000:
+        tax = ((income - 600000) * 0.10) + 15000
+    elif income > 300000:
+        tax = (income - 300000) * 0.05
+    else:
+        tax = 0
+    return tax
+"""""
+def calculate_tax(income, tax_slabs):
+    tax = 0
+    previous_max = 0
+
+    for slab in tax_slabs:
+        if slab['max'] is None or income > slab['max']:
+            tax += ((slab['max'] if slab['max'] is not None else income) - previous_max) * (slab['rate'] / 100)
+            previous_max = slab['max'] if slab['max'] is not None else income
+        else:
+            tax += (income - previous_max) * (slab['rate'] / 100)
+            break
+    return tax
+
+"""""
+-------------------------------------------------
+This is the reference for the calculate_surcharge
+-------------------------------------------------
+def calculate_surcharge(net_tax, income):
+    if income > 20000000:
+        surcharge = net_tax * 0.25
+    elif income > 10000000:
+        surcharge = net_tax * 0.15
+    elif income > 5000000:
+        surcharge = net_tax * 0.10
+    else:
+        surcharge = 0
+    return surcharge
+"""""
+def calculate_surcharge(net_tax, income, charges):
+    surcharge = 0
+    for limits in charges:
+        if income > limits['min']:
+            surcharge = net_tax * (limits['rate'] / 100)
+        else:
+            pass
+    return surcharge
+
+# def calculate_surcharge(net_tax, income, charges):
+#     surcharge = 0
+#
+#     for limits in charges:
+#         if income > limits['min']:
+#             surcharge = net_tax * (limits['rate'] / 100)
+#         elif income > limits['min']:
+#             surcharge = net_tax * (limits['rate'] / 100)
+#         elif income > limits['min']:
+#             surcharge = net_tax * (limits['rate'] / 100)
+#         else:
+#             pass
+#     return surcharge
+'''''
+---------------------------------------------------------------
+Relief on the surcharge
+---------------------------------------------------------------
+'''''
+def calculate_marginal_relief_surcharge(income, surcharge, net_tax):
+    if income > 20000000:
+        if (income - 20000000) > ((surcharge - 855000) + (net_tax - 5700000)):
+            marginal_relief_surcharge = 0
+        else:
+            marginal_relief_surcharge = ((surcharge - 855000) + (net_tax - 5700000) - (income - 20000000))
+
+    elif 20000000 > income > 10000000:
+        if (income - 10000000) > ((surcharge - 270000) + (net_tax - 2700000)):
+            marginal_relief_surcharge = 0
+        else:
+            marginal_relief_surcharge = ((surcharge - 270000) + (net_tax - 2700000) - (income - 10000000))
+
+    elif 10000000 > income > 5000000:
+        if (income - 5000000) > (surcharge + (net_tax - 1200000)):
+            marginal_relief_surcharge = 0
+        else:
+            marginal_relief_surcharge = (surcharge + (net_tax - 1200000)) - (income - 5000000)
+    else:
+        marginal_relief_surcharge = 0
+    return marginal_relief_surcharge
+
+def calculate_marginal_relief_surcharge_firms(income, surcharge, net_tax):
+    if income > 10000000:
+        if surcharge-((income-10000000)-(net_tax-3000000)) > 0:
+            marginal_relief_surcharge = surcharge - ((income - 10000000) - (net_tax - 3000000))
+        else:
+            marginal_relief_surcharge = 0
+    else:
+        marginal_relief_surcharge = 0
+    return marginal_relief_surcharge
+
+def calculate_marginal_relief_surcharge_foreign(income, surcharge, net_tax):
+    if income > 100000000:
+        if (surcharge-((income-100000000)-(net_tax-40000000)) - 800000) > 0:
+            marginal_relief_surcharge = surcharge - ((income-100000000)-(net_tax-40000000)) - 800000
+        else:
+            marginal_relief_surcharge = 0
+    elif 100000000 > income > 10000000:
+        if surcharge - ((income - 10000000) - (net_tax - 4000000)) > 0:
+            marginal_relief_surcharge = surcharge - ((income - 10000000) - (net_tax - 4000000))
+        else:
+            marginal_relief_surcharge = 0
+    else:
+        marginal_relief_surcharge = 0
+    return marginal_relief_surcharge
+
+def calculate_marginal_relief_surcharge_domestic(income, surcharge, net_tax):
+    if income > 100000000:
+        if surcharge - ((income - 100000000) - (net_tax - 30000000) + 2100000) > 0:
+            marginal_relief_surcharge = surcharge - ((income-100000000)-(net_tax-30000000) + 2100000)
+        else:
+            marginal_relief_surcharge = 0
+    elif 100000000 > income > 10000000:
+        if surcharge - ((income - 10000000) - (net_tax - 3000000)) > 0:
+            marginal_relief_surcharge = surcharge - ((income - 10000000) - (net_tax - 3000000))
+        else:
+            marginal_relief_surcharge = 0
+    else:
+        marginal_relief_surcharge = 0
+    return marginal_relief_surcharge
+
+'''''
+---------------------------------------------------------------
+Relief on the salaried individual
+---------------------------------------------------------------
+'''''
+def calculate_marginal_relief_income_tax(income, net_tax):
+    if income > 700000:
+        if (income - 700000) > net_tax:
+            marginal_relief_income_tax = 0
+        else:
+            marginal_relief_income_tax = net_tax - (income - 700000)
+    else:
+        marginal_relief_income_tax = 0
+    return marginal_relief_income_tax
+
+def calculate_marginal_relief_income_tax2(income, net_tax):
+    if income > 500000:
+        if (income - 500000) > net_tax:
+            marginal_relief_income_tax = 0
+        else:
+            marginal_relief_income_tax = net_tax - (income - 500000)
+    else:
+        marginal_relief_income_tax = 0
+    return marginal_relief_income_tax
+
+
+class get_tax_details(APIView):
+    def put(self, request):
+        try:
+            tcs_tds = int(request.data.get('tcs_tds'))
+            status_id = request.GET.get('status_id')
+            fy = request.GET.get('financialYear')
+            quarter = request.GET.get('quarter')
+            try:
+                # Attempt to fetch TaxData object
+                tax_data = TaxData.objects.get(status_id=status_id, financialYear=fy, quarter=quarter)
+                existing_data = TaxDataSerializer(tax_data).data
+
+                income_details = IncomeDetails.objects.get(status=status_id, financialYear=fy, quarter=quarter)
+                income_data = IncomeDetailsSerializer(income_details, partial=True).data
+
+                if existing_data['totalIncome'] == income_data['totalIncome']:
+                    # Extract values from the existing TaxData record
+                    TaxIncomeLiability = existing_data['tax_income_liability']
+                    NetIncomeTaxLiability = TaxIncomeLiability - tcs_tds
+                    payable_1 = round(NetIncomeTaxLiability * 0.15)
+                    payable_2 = round(NetIncomeTaxLiability * 0.45)
+                    payable_3 = round(NetIncomeTaxLiability * 0.75)
+                    payable_4 = round(NetIncomeTaxLiability * 1.00)
+                    installment_1 = round(payable_1)
+                    installment_2 = round(payable_2 - payable_1)
+                    installment_3 = round(payable_3 - payable_2)
+                    installment_4 = round(payable_4 - payable_3)
+
+                    # Update the data dictionary with new values
+                    existing_data.update({
+                        'tcs_tds': tcs_tds,
+                        'net_income_tax_liability': NetIncomeTaxLiability,
+                        'payable_1': payable_1,
+                        'payable_2': payable_2,
+                        'payable_3': payable_3,
+                        'payable_4': payable_4,
+                        'installment_1': installment_1,
+                        'installment_2': installment_2,
+                        'installment_3': installment_3,
+                        'installment_4': installment_4
+                    })
+
+                    # Serialize and save the updated data
+                    serializer = TaxDataSerializer(tax_data, data=existing_data)
+                    if serializer.is_valid():
+                        serializer.save()
+                        return Response(serializer.data, status=status.HTTP_200_OK)
+                    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                else:
+                    income_details = IncomeDetails.objects.get(status=status_id, financialYear=fy, quarter=quarter)
+                    data = IncomeDetailsSerializer(income_details, partial=True).data
+
+                    opting_taxation_us_115bac = data['optingTaxationU_s115BAC']
+                    taxSlabs = data['tax_slabs']
+                    client_status = data['clientStatus']
+                    net_taxable_income = data['totalIncome']
+                    if data.get('capitalGains', {}) == {}:
+                        specialRates = 0
+                    else:
+                        specialRates = (
+                            data['capitalGains']['stcg_15']['taxOnGain'] +
+                            data['capitalGains']['ltcg_10']['taxOnGain'] +
+                            data['capitalGains']['ltcg_20']['taxOnGain'] +
+                            data['capitalGains']['ltcg_112']['taxOnGain'] +
+                            data['otherSourcesOfIncome']['taxAmount30_4a']
+                    )
+
+                    tax_details = var['tax_details']
+                    capitalGainTax = (
+                            data['capitalGains']['stcg_15']['taxOnGain'] +
+                            data['capitalGains']['ltcg_10']['taxOnGain'] +
+                            data['capitalGains']['ltcg_20']['taxOnGain'] +
+                            data['capitalGains']['ltcg_112']['taxOnGain']
+                    )
+
+                    for details in tax_details:
+                        if client_status in details['clientStatus']:
+                            if 'optingTaxationU_s115BAC' in details and details['optingTaxationU_s115BAC'] == opting_taxation_us_115bac:
+                                tax_slabs = details['tax_slabs']
+                                net_tax = round(calculate_tax(net_taxable_income, tax_slabs))
+                                if opting_taxation_us_115bac == 'Yes':
+                                    marginal_relief_income_tax = round(calculate_marginal_relief_income_tax(net_taxable_income, net_tax))
+                                else:
+                                    marginal_relief_income_tax = round(calculate_marginal_relief_income_tax2(net_taxable_income, net_tax))
+                                tax_beforeRebate = round(net_tax + specialRates)
+                                if opting_taxation_us_115bac == 'Yes':
+                                    if net_taxable_income < 700001:
+                                        rebate_under87 = net_tax
+                                    else:
+                                        rebate_under87 = 0
+                                else:
+                                    rebate_under87 = 0
+                                final_tax = tax_beforeRebate - rebate_under87
+                                net_tax_after_relief = final_tax - marginal_relief_income_tax
+                                charges = details['surcharges']
+                                surcharge = round(calculate_surcharge(net_tax_after_relief, net_taxable_income, charges))
+                                marginal_relief_surcharge = round(calculate_marginal_relief_surcharge(net_taxable_income, surcharge,
+                                                                                                net_tax_after_relief))
+                                net_surcharge = max(surcharge - marginal_relief_surcharge, 0)
+
+                                health_education_cess = round((net_tax_after_relief + net_surcharge) * 0.04)
+                                total_tax_liability = net_tax_after_relief + net_surcharge + health_education_cess
+
+                            elif details['clientStatus'] == "Firms" or details['clientStatus'] == "Foreign Company" or details['clientStatus'] == "LLP":
+                                tax_slabs = details['tax_slabs']
+                                for slab in tax_slabs:
+                                    rate = slab['rate'] / 100
+                                net_tax = round(net_taxable_income * rate)
+                                charges = details['surcharges']
+                                if details['clientStatus'] == "Firms" or details['clientStatus'] == "LLP":
+                                    surcharge = round(calculate_surcharge(net_tax, net_taxable_income, charges))
+                                    marginal_relief_surcharge = round(calculate_marginal_relief_surcharge_firms(net_taxable_income, surcharge,
+                                                                                                    net_tax))
+                                elif details['clientStatus'] == "Foreign Company":
+                                    surcharge = round(calculate_surcharge(net_tax, net_taxable_income, charges))
+                                    marginal_relief_surcharge = round(calculate_marginal_relief_surcharge_foreign(net_taxable_income, surcharge, net_tax))
+                                else:
+                                    pass
+                                net_surcharge = round(surcharge - marginal_relief_surcharge)
+                                health_education_cess = round((net_tax + net_surcharge) * 0.04)
+                                total_tax_liability = net_tax + net_surcharge + health_education_cess
+                                rebate_under87 = 0
+                                tax_beforeRebate = round(net_tax + specialRates)
+                                final_tax = tax_beforeRebate - rebate_under87
+                                marginal_relief_income_tax = 0
+                                net_tax_after_relief = final_tax - marginal_relief_income_tax
+
+                            elif details['clientStatus'] == "Domestic Company":
+                                tax_slabs = details['tax_slabs']
+                                for condition in tax_slabs:
+                                    if condition['condition'] == data['tax_slabs']:
+                                        rate = condition['rate'] / 100
+                                        break
+                                net_tax = round(net_taxable_income * rate)
+                                charges = details['surcharges']
+                                surcharge = round(calculate_surcharge(net_tax, net_taxable_income, charges))
+                                marginal_relief_surcharge = round(calculate_marginal_relief_surcharge_domestic(net_taxable_income, surcharge, net_tax))
+                                net_surcharge = round(surcharge - marginal_relief_surcharge)
+                                health_education_cess = round((net_tax + net_surcharge) * 0.04)
+                                total_tax_liability = net_tax + net_surcharge + health_education_cess
+                                rebate_under87 = 0
+                                tax_beforeRebate = round(net_tax + specialRates)
+                                final_tax = tax_beforeRebate - rebate_under87
+                                marginal_relief_income_tax = 0
+                                net_tax_after_relief = final_tax - marginal_relief_income_tax
+
+                            elif details['clientStatus'] == "Cooperative Society" and details['conditions'] == taxSlabs:
+                                tax_slabs = details['tax_slabs']
+                                net_tax = round(calculate_tax(net_taxable_income, tax_slabs))
+                                charges = details['surcharges']
+                                surcharge = round(calculate_surcharge(net_tax, net_taxable_income, charges))
+                                marginal_relief_surcharge = 0
+                                net_surcharge = round(surcharge - marginal_relief_surcharge)
+                                health_education_cess = round((net_tax + net_surcharge) * 0.04)
+                                total_tax_liability = net_tax + net_surcharge + health_education_cess
+                                rebate_under87 = 0
+                                tax_beforeRebate = round(net_tax + specialRates)
+                                final_tax = tax_beforeRebate - rebate_under87
+                                marginal_relief_income_tax = 0
+                                net_tax_after_relief = final_tax - marginal_relief_income_tax
+
+                            else:
+                                continue
+
+                            incomeTax = net_tax + capitalGainTax + data['otherSourcesOfIncome']['taxAmount30_4a']
+                            taxReliefafter87A = incomeTax - rebate_under87
+                            TaxIncomeLiability = taxReliefafter87A + surcharge + health_education_cess
+                            NetIncomeTaxLiability = TaxIncomeLiability - tcs_tds
+                            payable_1 = round(NetIncomeTaxLiability * 0.15)
+                            payable_2 = round(NetIncomeTaxLiability * 0.45)
+                            payable_3 = round(NetIncomeTaxLiability * 0.75)
+                            payable_4 = round(NetIncomeTaxLiability * 1.00)
+                            installment_1 = round(payable_1)
+                            installment_2 = round(payable_2 - payable_1)
+                            installment_3 = round(payable_3 - payable_2)
+                            installment_4 = round(payable_4 - payable_3)
+
+                            existing_data.update({
+                                'status_id': data['status'],
+                                'clientStatus': data['clientStatus'],
+                                'residential_status': data['residentialStatusOfAssesses'],
+                                'financialYear': data['financialYear'],
+                                'quarter': data['quarter'],
+                                'optingTaxationU_s115BAC': opting_taxation_us_115bac,
+                                'totalIncome': net_taxable_income,
+                                'tax_normal_rates': net_tax,
+                                'specialRates': specialRates,
+                                'tax_before_rebate': tax_beforeRebate,
+                                'rebate_under87': rebate_under87,
+                                'net_tax': final_tax,
+                                'marginal_relief_income_tax': marginal_relief_income_tax,
+                                'net_tax_after_relief': net_tax_after_relief,
+                                'surcharge': surcharge,
+                                'marginal_relief_surcharge': marginal_relief_surcharge,
+                                'net_surcharge': net_surcharge,
+                                'health_education_cess': health_education_cess,
+                                'total_tax_liability': total_tax_liability,
+                                "capital_gain_tax": capitalGainTax,
+                                "stcg_15": data['capitalGains']['stcg_15']['taxOnGain'],
+                                "ltcg_10": data['capitalGains']['ltcg_10']['taxOnGain'],
+                                "ltcg_20": data['capitalGains']['ltcg_20']['taxOnGain'],
+                                "ltcg_112": data['capitalGains']['ltcg_112']['taxOnGain'],
+                                "ost_30": data['otherSourcesOfIncome']['taxAmount30_4a'],
+                                'income_tax': incomeTax,
+                                'tax_relief_after_87A': taxReliefafter87A,
+                                'tax_income_liability': TaxIncomeLiability,
+                                'tcs_tds': tcs_tds,
+                                'net_income_tax_liability': NetIncomeTaxLiability,
+                                'payable_1': payable_1,
+                                'payable_2': payable_2,
+                                'payable_3': payable_3,
+                                'payable_4': payable_4,
+                                'installment_1': installment_1,
+                                'installment_2': installment_2,
+                                'installment_3': installment_3,
+                                'installment_4': installment_4
+                            })
+                            # Serialize and save the updated data
+                            serializer = TaxDataSerializer(tax_data, data=existing_data)
+                            if serializer.is_valid():
+                                serializer.save()
+                                return Response(serializer.data, status=status.HTTP_200_OK)
+                            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            except TaxData.DoesNotExist:
+                try:
+                    # Attempt to fetch IncomeDetails object
+                    income_details = IncomeDetails.objects.get(status=status_id, financialYear=fy, quarter=quarter)
+                    data = IncomeDetailsSerializer(income_details, partial=True).data
+
+                except IncomeDetails.DoesNotExist:
+                    return Response({'error': 'Record not found'}, status=status.HTTP_404_NOT_FOUND)
+
+            opting_taxation_us_115bac = data['optingTaxationU_s115BAC']
+            taxSlabs = data['tax_slabs']
+            client_status = data['clientStatus']
+            net_taxable_income = data['totalIncome']
+            if data.get('capitalGains', {}) == {}:
+                specialRates = 0
+            else:
+                specialRates = (
+                    data['capitalGains']['stcg_15']['taxOnGain'] +
+                    data['capitalGains']['ltcg_10']['taxOnGain'] +
+                    data['capitalGains']['ltcg_20']['taxOnGain'] +
+                    data['capitalGains']['ltcg_112']['taxOnGain'] +
+                    data['otherSourcesOfIncome']['taxAmount30_4a']
+            )
+
+            tax_details = var['tax_details']
+            capitalGainTax = (
+                    data['capitalGains']['stcg_15']['taxOnGain'] +
+                    data['capitalGains']['ltcg_10']['taxOnGain'] +
+                    data['capitalGains']['ltcg_20']['taxOnGain'] +
+                    data['capitalGains']['ltcg_112']['taxOnGain']
+            )
+
+            for details in tax_details:
+                if client_status in details['clientStatus']:
+                    if 'optingTaxationU_s115BAC' in details and details['optingTaxationU_s115BAC'] == opting_taxation_us_115bac:
+                        tax_slabs = details['tax_slabs']
+                        net_tax = round(calculate_tax(net_taxable_income, tax_slabs))
+                        if opting_taxation_us_115bac == 'Yes':
+                            marginal_relief_income_tax = round(calculate_marginal_relief_income_tax(net_taxable_income, net_tax))
+                        else:
+                            marginal_relief_income_tax = round(calculate_marginal_relief_income_tax2(net_taxable_income, net_tax))
+                        tax_beforeRebate = round(net_tax + specialRates)
+                        if opting_taxation_us_115bac == 'Yes':
+                            if net_taxable_income < 700001:
+                                rebate_under87 = net_tax
+                            else:
+                                rebate_under87 = 0
+                        else:
+                            rebate_under87 = 0
+                        final_tax = tax_beforeRebate - rebate_under87
+                        net_tax_after_relief = final_tax - marginal_relief_income_tax
+                        charges = details['surcharges']
+                        surcharge = round(calculate_surcharge(net_tax_after_relief, net_taxable_income, charges))
+                        marginal_relief_surcharge = round(calculate_marginal_relief_surcharge(net_taxable_income, surcharge,
+                                                                                        net_tax_after_relief))
+                        net_surcharge = max(surcharge - marginal_relief_surcharge, 0)
+
+                        health_education_cess = round((net_tax_after_relief + net_surcharge) * 0.04)
+                        total_tax_liability = net_tax_after_relief + net_surcharge + health_education_cess
+
+                    elif details['clientStatus'] == "Firms" or details['clientStatus'] == "Foreign Company" or details['clientStatus'] == "LLP":
+                        tax_slabs = details['tax_slabs']
+                        for slab in tax_slabs:
+                            rate = slab['rate'] / 100
+                        net_tax = round(net_taxable_income * rate)
+                        charges = details['surcharges']
+                        if details['clientStatus'] == "Firms" or details['clientStatus'] == "LLP":
+                            surcharge = round(calculate_surcharge(net_tax, net_taxable_income, charges))
+                            marginal_relief_surcharge = round(calculate_marginal_relief_surcharge_firms(net_taxable_income, surcharge,
+                                                                                            net_tax))
+                        elif details['clientStatus'] == "Foreign Company":
+                            surcharge = round(calculate_surcharge(net_tax, net_taxable_income, charges))
+                            marginal_relief_surcharge = round(calculate_marginal_relief_surcharge_foreign(net_taxable_income, surcharge, net_tax))
+                        else:
+                            pass
+                        net_surcharge = round(surcharge - marginal_relief_surcharge)
+                        health_education_cess = round((net_tax + net_surcharge) * 0.04)
+                        total_tax_liability = net_tax + net_surcharge + health_education_cess
+                        rebate_under87 = 0
+                        tax_beforeRebate = round(net_tax + specialRates)
+                        final_tax = tax_beforeRebate - rebate_under87
+                        marginal_relief_income_tax = 0
+                        net_tax_after_relief = final_tax - marginal_relief_income_tax
+
+                    elif details['clientStatus'] == "Domestic Company":
+                        tax_slabs = details['tax_slabs']
+                        for condition in tax_slabs:
+                            if condition['condition'] == data['tax_slabs']:
+                                rate = condition['rate'] / 100
+                                break
+                        net_tax = round(net_taxable_income * rate)
+                        charges = details['surcharges']
+                        surcharge = round(calculate_surcharge(net_tax, net_taxable_income, charges))
+                        marginal_relief_surcharge = round(calculate_marginal_relief_surcharge_domestic(net_taxable_income, surcharge, net_tax))
+                        net_surcharge = round(surcharge - marginal_relief_surcharge)
+                        health_education_cess = round((net_tax + net_surcharge) * 0.04)
+                        total_tax_liability = net_tax + net_surcharge + health_education_cess
+                        rebate_under87 = 0
+                        tax_beforeRebate = round(net_tax + specialRates)
+                        final_tax = tax_beforeRebate - rebate_under87
+                        marginal_relief_income_tax = 0
+                        net_tax_after_relief = final_tax - marginal_relief_income_tax
+
+                    elif details['clientStatus'] == "Cooperative Society" and details['conditions'] == taxSlabs:
+                        tax_slabs = details['tax_slabs']
+                        net_tax = round(calculate_tax(net_taxable_income, tax_slabs))
+                        charges = details['surcharges']
+                        surcharge = round(calculate_surcharge(net_tax, net_taxable_income, charges))
+                        marginal_relief_surcharge = 0
+                        net_surcharge = round(surcharge - marginal_relief_surcharge)
+                        health_education_cess = round((net_tax + net_surcharge) * 0.04)
+                        total_tax_liability = net_tax + net_surcharge + health_education_cess
+                        rebate_under87 = 0
+                        tax_beforeRebate = round(net_tax + specialRates)
+                        final_tax = tax_beforeRebate - rebate_under87
+                        marginal_relief_income_tax = 0
+                        net_tax_after_relief = final_tax - marginal_relief_income_tax
+
+                    else:
+                        continue
+
+                    incomeTax = net_tax + capitalGainTax + data['otherSourcesOfIncome']['taxAmount30_4a']
+                    taxReliefafter87A = incomeTax - rebate_under87
+                    TaxIncomeLiability = taxReliefafter87A + surcharge + health_education_cess
+                    NetIncomeTaxLiability = TaxIncomeLiability - tcs_tds
+                    payable_1 = round(NetIncomeTaxLiability * 0.15)
+                    payable_2 = round(NetIncomeTaxLiability * 0.45)
+                    payable_3 = round(NetIncomeTaxLiability * 0.75)
+                    payable_4 = round(NetIncomeTaxLiability * 1.00)
+                    installment_1 = round(payable_1)
+                    installment_2 = round(payable_2 - payable_1)
+                    installment_3 = round(payable_3 - payable_2)
+                    installment_4 = round(payable_4 - payable_3)
+
+                    response_data = {
+                        'status_id': data['status'],
+                        'clientStatus': data['clientStatus'],
+                        'residential_status': data['residentialStatusOfAssesses'],
+                        'financialYear': data['financialYear'],
+                        'quarter': data['quarter'],
+                        'optingTaxationU_s115BAC': opting_taxation_us_115bac,
+                        'totalIncome': net_taxable_income,
+                        'tax_normal_rates': net_tax,
+                        'specialRates': specialRates,
+                        'tax_before_rebate': tax_beforeRebate,
+                        'rebate_under87': rebate_under87,
+                        'net_tax': final_tax,
+                        'marginal_relief_income_tax': marginal_relief_income_tax,
+                        'net_tax_after_relief': net_tax_after_relief,
+                        'surcharge': surcharge,
+                        'marginal_relief_surcharge': marginal_relief_surcharge,
+                        'net_surcharge': net_surcharge,
+                        'health_education_cess': health_education_cess,
+                        'total_tax_liability': total_tax_liability,
+                        "capital_gain_tax": capitalGainTax,
+                        "stcg_15": data['capitalGains']['stcg_15']['taxOnGain'],
+                        "ltcg_10": data['capitalGains']['ltcg_10']['taxOnGain'],
+                        "ltcg_20": data['capitalGains']['ltcg_20']['taxOnGain'],
+                        "ltcg_112": data['capitalGains']['ltcg_112']['taxOnGain'],
+                        "ost_30": data['otherSourcesOfIncome']['taxAmount30_4a'],
+                        'income_tax': incomeTax,
+                        'tax_relief_after_87A': taxReliefafter87A,
+                        'tax_income_liability': TaxIncomeLiability,
+                        'tcs_tds': tcs_tds,
+                        'net_income_tax_liability': NetIncomeTaxLiability,
+                        'payable_1': payable_1,
+                        'payable_2': payable_2,
+                        'payable_3': payable_3,
+                        'payable_4': payable_4,
+                        'installment_1': installment_1,
+                        'installment_2': installment_2,
+                        'installment_3': installment_3,
+                        'installment_4': installment_4
+                    }
+                    # Use the serializer to validate and save the data
+                    serializer = TaxDataSerializer(data=response_data)
+                    if serializer.is_valid():
+                        serializer.save()
+                        return Response(serializer.data, status=status.HTTP_200_OK)
+                    else:
+                        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'error': 'No matching client status found.'}, status=status.HTTP_404_NOT_FOUND)
+        except (KeyError, ValueError) as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
