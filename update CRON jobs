@@ -1,0 +1,51 @@
+@api_view(['PUT'])
+@permission_classes([AllowAny])
+def update_due_dates(request):
+    try:
+        qs = TaskJobDetails.objects.exclude(job_status='Completed')
+        query_data = TaskJobDetailsSerializer(qs, many=True).data
+        log_list = []
+        with ThreadPoolExecutor() as executor:
+            updated_due_date = [executor.submit(due_date, details) for details in query_data]
+            for newly_due_date in updated_due_date:
+                result = newly_due_date.result()
+                log_list.append(result)
+        return Response(log_list, status=status.HTTP_200_OK)
+    except Exception as e:
+        # Handle errors appropriately (e.g., logging, raising exceptions)
+        logger.error(f"Error updating TaskJobDetails: {e}")
+        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+def due_date(details):
+    try:
+        current_time = datetime.now()
+        date_time_internal_due_date = datetime.strptime(details['internal_due_date'], '%Y-%m-%d')
+        date_time_govt_due_date = datetime.strptime(details['govt_due_date'], '%Y-%m-%d')
+        if date_time_internal_due_date < current_time:
+            difference_internal = current_time - date_time_internal_due_date
+            internal_ageing = difference_internal.days
+        else:
+            internal_ageing = None
+        if date_time_govt_due_date < current_time:
+            difference_govt = current_time - date_time_govt_due_date
+            govt_ageing = difference_govt.days
+        else:
+            govt_ageing = None
+        # Save the updated data to MongoDB within a transaction
+        with transaction.atomic():
+            task_job_details_instance = TaskJobDetails.objects.select_for_update().get(id=details['id'])
+            task_job_details_instance.idd_ageing = internal_ageing
+            task_job_details_instance.gdd_ageing = govt_ageing
+            task_job_details_instance.save()
+        return {
+            "business_id": details['business_id'],
+            'client_id': details['client_id'],
+            'task_id': details['task_id'],
+            'idd_ageing': internal_ageing,
+            'gdd_ageing': govt_ageing
+        }
+    except Exception as e:
+        # Handle errors appropriately (e.g., logging, raising exceptions)
+        logger.error(f"Error updating TaskJobDetails: {e}")
+        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
