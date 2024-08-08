@@ -1,0 +1,45 @@
+name: dev Finance Box Backend workflow
+
+on:
+  pull_request:
+    branches: ["dev"]
+    types:
+      - closed
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.merged == true
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Docker login to DockerHub
+        env:
+          DOCKER_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+          DOCKER_PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD }}
+        run: docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
+
+      - name: Build the Docker image
+        run: docker build --file ./Dockerfile --tag ${{ secrets.DOCKERHUB_USERNAME }}/${{vars.REPO_NAME}}:dev-latest .
+
+      - name: Push Docker Image
+        run: docker image push --all-tags ${{ secrets.DOCKERHUB_USERNAME }}/${{vars.REPO_NAME}}
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.merged == true
+    steps:
+      - name: Deploy to AWS
+        uses: appleboy/ssh-action@v0.1.8
+        with:
+          host: ${{ secrets.AWS_HOST }}
+          username: ${{ secrets.AWS_USERNAME }}
+          key: ${{ secrets.AWS_PRIVATE_KEY }}
+          port: ${{ secrets.AWS_PORT }}
+          script: |
+            cd dev-financebox-backend
+            docker compose down
+            docker pull ${{ secrets.DOCKERHUB_USERNAME }}/${{vars.REPO_NAME}}:dev-latest
+            docker compose up -d
