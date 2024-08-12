@@ -1,0 +1,50 @@
+import boto3
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+from email.mime.application import MIMEApplication
+
+def lambda_handler(event, context):
+
+	to_email = event['to_email']
+	s3_path = event['s3_path']
+	
+	# Initialize clients
+	s3 = boto3.client('s3')
+	ses = boto3.client('ses')
+	
+	# Get object from S3
+	parts = s3_path.replace('https://', '').split('/')
+	bucket_name = parts[0].split('.')[0]
+	object_key = '/'.join(parts[1:])
+
+	file_obj = s3.get_object(Bucket=bucket_name, Key=object_key)
+	file_content = file_obj["Body"].read()
+
+	sender = "sudeep@financebox.in"
+	subject = "Invoice Generated"
+	body = """
+		<br>
+		This email is to notify you regarding event.
+		The object is deleted
+	"""
+
+	msg = MIMEMultipart()
+	msg["Subject"] = subject
+	msg["From"] = sender
+	msg["To"] = to_email
+
+	body_txt = MIMEText(body, "html")
+	object = "invoice.pdf"
+
+	attachment = MIMEApplication(file_content)
+	attachment.add_header("Content-Disposition", "attachment", filename=object)
+
+	msg.attach(body_txt)
+	msg.attach(attachment)
+
+	response = ses.send_raw_email(Source=sender, Destinations=[to_email], RawMessage={"Data": msg.as_string()})
+
+	return {
+		'statusCode': 200,
+		'body': 'Email sent!'
+	}
